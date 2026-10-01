@@ -1,0 +1,13 @@
+---
+description: HCC Downloads design source of truth
+globs:
+alwaysApply: true
+---
+
+# HCC Downloads — design link
+
+Primary Figma file for this project:
+
+https://www.figma.com/design/k5YXSfUezDJ5gdZilTd6d3/HCC-Downloads?node-id=0-1
+
+When implementing or reviewing UI for HCC Downloads, pull context from this file via the Figma MCP (`fileKey`: `k5YXSfUezDJ5gdZilTd6d3`).

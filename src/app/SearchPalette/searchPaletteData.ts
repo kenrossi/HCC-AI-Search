@@ -899,7 +899,9 @@ const recordMatches = (record: InventoryRecord, query: string, service?: Searcha
   }
 
   const haystack = normalize(
-    [record.item.title, record.item.meta, record.item.description, ...(record.tags || [])].join(' '),
+    [record.item.title, record.item.meta, record.item.description, ...(record.tags || [])]
+      .filter((s): s is string => typeof s === 'string')
+      .join(' '),
   );
   const tokens = q.split(' ').filter((token) => token.length > 0);
   return tokens.some((token) => haystack.includes(token));

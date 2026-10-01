@@ -265,6 +265,7 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>(
     () => Object.fromEntries(CATEGORIES.map((c) => [c.id, true])),
   );
+  const categoryRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
   const allExpanded = CATEGORIES.every((c) => expanded[c.id]);
   const toggleAllLabel = allExpanded && !jumpId ? 'Collapse all' : 'Expand all';
@@ -277,6 +278,9 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
     setJumpId(id);
     if (id) {
       setExpanded(Object.fromEntries(CATEGORIES.map((c) => [c.id, c.id === id])));
+      setTimeout(() => {
+        categoryRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
     } else {
       setExpanded(Object.fromEntries(CATEGORIES.map((c) => [c.id, true])));
     }
@@ -288,12 +292,7 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
     setExpanded(Object.fromEntries(CATEGORIES.map((c) => [c.id, shouldExpand])));
   };
 
-  const orderedCats = React.useMemo(() => {
-    if (!jumpId) return CATEGORIES;
-    const focused = CATEGORIES.find((c) => c.id === jumpId);
-    if (!focused) return CATEGORIES;
-    return [focused, ...CATEGORIES.filter((c) => c.id !== jumpId)];
-  }, [jumpId]);
+  const orderedCats = CATEGORIES;
 
   const filterProducts = (products: Product[]) => {
     const q = productQuery.trim().toLowerCase();
@@ -438,6 +437,7 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
                     <Select
                       isOpen={jumpOpen}
                       onOpenChange={(open) => setJumpOpen(open)}
+                      popperProps={{ appendTo: () => document.body, enableFlip: true }}
                       toggle={(ref) => (
                         <MenuToggle
                           ref={ref}
@@ -474,7 +474,7 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
               {jumpId && (
                 <FlexItem>
                   <span className="ai-search-downloads__jump-hint">
-                    Other sections collapsed — use Expand all to restore.
+                    Showing: <strong>{CATEGORIES.find((c) => c.id === jumpId)?.name}</strong>
                   </span>
                 </FlexItem>
               )}
@@ -490,6 +490,7 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
               return (
                 <div
                   key={cat.id}
+                  ref={(el) => { categoryRefs.current[cat.id] = el; }}
                   className={`ai-search-downloads__category${focused ? ' ai-search-downloads__category--focused' : ''}`}
                 >
                   <ExpandableSection
