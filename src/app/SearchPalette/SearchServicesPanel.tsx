@@ -138,6 +138,14 @@ const CatalogMenu: React.FunctionComponent<{
   );
 };
 
+/** `?scenario=catalog` restores the pre-rich-panel Downloads CatalogMenu. */
+const isDownloadsCatalogScenario = (): boolean => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return new URLSearchParams(window.location.search).get('scenario') === 'catalog';
+};
+
 const SearchServiceDetail: React.FunctionComponent<SearchServiceDetailProps> = ({
   item,
   favoritedItems,
@@ -145,8 +153,9 @@ const SearchServiceDetail: React.FunctionComponent<SearchServiceDetailProps> = (
   onNavigate,
   externalQuery = '',
 }) => {
-  // Downloads gets its own rich panel instead of the generic catalog menu.
-  if (item.id === 'downloads') {
+  // Downloads gets its own rich panel instead of the generic catalog menu —
+  // unless ?scenario=catalog (baseline v0 catalog for demos / comparison).
+  if (item.id === 'downloads' && !isDownloadsCatalogScenario()) {
     return <DownloadsServiceDetail externalQuery={externalQuery} onNavigate={onNavigate} />;
   }
 

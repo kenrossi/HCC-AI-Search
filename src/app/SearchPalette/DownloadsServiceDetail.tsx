@@ -349,6 +349,8 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
       {/* ── All Red Hat products ──────────────────────────────── */}
       <StackItem>
         <Stack hasGutter>
+          <div className="ai-search-downloads__controls-sticky">
+            <Stack hasGutter>
           {/* Header + view toggle */}
           <StackItem>
             <Flex
@@ -480,6 +482,8 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
               )}
             </Flex>
           </StackItem>
+            </Stack>
+          </div>
 
           {/* Category accordion sections */}
           <StackItem>

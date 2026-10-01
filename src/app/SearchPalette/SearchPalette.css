@@ -481,6 +481,17 @@
   --pf-v6-c-menu--BoxShadow: var(--pf-t--global--box-shadow--sm);
 }
 
+.ai-search-downloads__controls-sticky {
+  position: sticky;
+  top: calc(-1 * var(--pf-t--global--spacer--lg));
+  z-index: 10;
+  background-color: var(--pf-t--global--background--color--primary--default);
+  margin-inline: calc(-1 * var(--pf-t--global--spacer--lg));
+  padding-inline: var(--pf-t--global--spacer--lg);
+  padding-block: var(--pf-t--global--spacer--md);
+  border-bottom: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
+}
+
 .ai-search-downloads__jump-label {
   font-weight: var(--pf-t--global--font--weight--body--bold);
   white-space: nowrap;
@@ -494,6 +505,7 @@
 
 .ai-search-downloads__category {
   margin-block-end: var(--pf-t--global--spacer--xs);
+  scroll-margin-top: 175px; /* clears the sticky controls bar on jump */
 }
 
 /* Red left bar on the category that was jumped-to */

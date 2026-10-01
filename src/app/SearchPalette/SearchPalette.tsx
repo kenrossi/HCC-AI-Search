@@ -175,7 +175,13 @@ const SearchPalette: React.FunctionComponent<SearchPaletteProps> = ({
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [playbookMessage, setPlaybookMessage] = React.useState<string | null>(null);
   const [panelStyle, setPanelStyle] = React.useState<React.CSSProperties>({});
-  const [selectedServiceId, setSelectedServiceId] = React.useState(DEFAULT_SERVICE_ID);
+  const isCatalogScenario =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('scenario') === 'catalog';
+  const catalogScenarioServiceId = 'downloads';
+
+  const [selectedServiceId, setSelectedServiceId] = React.useState(() =>
+    isCatalogScenario ? catalogScenarioServiceId : DEFAULT_SERVICE_ID,
+  );
   const [favoritedItems, setFavoritedItems] = React.useState<Set<string>>(new Set());
   const [collapsedGroups, setCollapsedGroups] = React.useState<Set<ResultGroupKey>>(new Set());
   const [showAiAnswers, setShowAiAnswers] = React.useState(true);
@@ -219,9 +225,9 @@ const SearchPalette: React.FunctionComponent<SearchPaletteProps> = ({
   const closeAndReset = React.useCallback(() => {
     setSelectedIndex(0);
     setPlaybookMessage(null);
-    setSelectedServiceId(DEFAULT_SERVICE_ID);
+    setSelectedServiceId(isCatalogScenario ? catalogScenarioServiceId : DEFAULT_SERVICE_ID);
     onClose();
-  }, [onClose]);
+  }, [isCatalogScenario, onClose]);
 
   const goTo = React.useCallback(
     (nav?: SearchNavTarget) => {
@@ -357,10 +363,19 @@ const SearchPalette: React.FunctionComponent<SearchPaletteProps> = ({
   }, [query, isOpen, selectedServiceId]);
 
   React.useEffect(() => {
-    if (!isOpen || hasQuery) {
+    if (hasQuery) {
+      setSelectedServiceId(DEFAULT_SERVICE_ID);
+      return;
+    }
+    if (isCatalogScenario) {
+      // Demo URL: always land on Downloads catalog when not searching
+      setSelectedServiceId(catalogScenarioServiceId);
+      return;
+    }
+    if (!isOpen) {
       setSelectedServiceId(DEFAULT_SERVICE_ID);
     }
-  }, [isOpen, hasQuery]);
+  }, [isOpen, hasQuery, isCatalogScenario]);
 
   React.useEffect(() => {
     if (!isOpen) {

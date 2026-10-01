@@ -1174,6 +1174,17 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const [aiSearchQuery, setAiSearchQuery] = React.useState('');
   const aiSearchInputRef = React.useRef<HTMLInputElement>(null);
   const aiSearchFieldRef = React.useRef<HTMLDivElement>(null);
+
+  // Demo: ?scenario=catalog opens palette on Downloads baseline catalog menu
+  React.useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('scenario') !== 'catalog') {
+      return;
+    }
+    setIsSearchPaletteOpen(true);
+    // Focus after paint so the masthead input is ready
+    const id = window.setTimeout(() => aiSearchInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, []);
   
   // Bookmarked menu items state
   const [bookmarkedItems, setBookmarkedItems] = React.useState<Set<string>>(new Set());
