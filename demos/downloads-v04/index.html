@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloads v0.4 — AI Search dropdown demo</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: RedHatText, 'Red Hat Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f2f2f2; }
+    button { font-family: inherit; }
+    input  { font-family: inherit; }
+    select { font-family: inherit; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f2f2f2; } ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/* ── PatternFly light-theme tokens ───────────────────────────────────── */
+const pf = {
+  bg: '#ffffff', bgSubtle: '#f2f2f2', bgHover: '#f0f0f0',
+  text: '#151515', textSubtle: '#6a6e73',
+  border: '#d2d2d2', borderDark: '#c7c7c7',
+  link: '#0066cc', primary: '#0066cc', onPrimary: '#ffffff',
+  brand: '#c9190b', iconMuted: '#6a6e73',
+};
+
+/* ── Data ─────────────────────────────────────────────────────────────── */
+const SERVICES = [
+  'My Favorite Services','AI/ML','Alerting & Data Integrations',
+  'Automation','Containers','Deploy','Downloads',
+  'Identity & Access Management','Inventories','Observability & Monitoring',
+];
+
+const FEATURED = [
+  { title: 'Red Hat Enterprise Linux',         detail: 'ISOs, kickstarts, cloud images' },
+  { title: 'Red Hat OpenShift',                detail: 'Installers, clients, pull secrets' },
+  { title: 'Ansible Automation Platform',      detail: 'Installer, bundles, collections' },
+];
+
+const CATEGORIES = [
+  { id: 'cloud', name: 'Cloud computing', products: [
+    { name: 'Red Hat Advanced Cluster Management for Kubernetes', download: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat Advanced Cluster Security for Kubernetes',   download: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat OpenShift AI',                               download: true, tryIt: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat OpenShift Container Platform',               download: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat OpenShift Platform Plus',                    download: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat OpenStack Platform',                         download: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat Quay',                                       download: true, phone: true, docs: true, info: true },
+  ]},
+  { id: 'infra', name: 'Infrastructure and management', products: [
+    { name: 'Red Hat Ansible Automation Platform', download: true, tryIt: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat Certificate System',          download: true, docs: true, info: true },
+    { name: 'Red Hat Directory Server',            download: true, docs: true, info: true },
+    { name: 'Red Hat Enterprise Linux',            download: true, tryIt: true, phone: true, docs: true, info: true },
+    { name: 'Red Hat Satellite',                   download: true, phone: true, docs: true, info: true },
+  ]},
+  { id: 'integration', name: 'Integration and automation', products: [
+    { name: 'Red Hat Application Foundations',   download: true, docs: true, info: true },
+    { name: 'Red Hat Fuse',                      download: true, docs: true, info: true },
+    { name: 'Red Hat AMQ',                       download: true, docs: true, info: true },
+    { name: 'Red Hat 3scale API Management',     download: true, docs: true, info: true },
+  ]},
+  { id: 'developer', name: 'Red Hat Developer', products: [
+    { name: 'Red Hat Developer Hub',           tryIt: true, docs: true, info: true },
+    { name: 'Red Hat OpenShift Dev Spaces',    tryIt: true, docs: true, info: true },
+  ]},
+  { id: 'runtimes', name: 'Runtimes', products: [
+    { name: 'Red Hat JBoss Enterprise Application Platform', download: true, docs: true, info: true },
+    { name: 'Red Hat Data Grid',                             download: true, docs: true, info: true },
+    { name: 'Red Hat build of Quarkus',                      download: true, docs: true, info: true },
+    { name: 'Red Hat build of Keycloak',                     download: true, docs: true, info: true },
+  ]},
+  { id: 'storage', name: 'Storage', products: [
+    { name: 'Red Hat Ceph Storage',                     download: true, docs: true, info: true },
+    { name: 'Red Hat OpenShift Data Foundation',        download: true, docs: true, info: true },
+    { name: 'Red Hat Hyperconverged Infrastructure',    download: true, docs: true, info: true },
+  ]},
+];
+
+const SOFTWARE = [
+  { title: 'RPM Package Search',       detail: 'Search the full Red Hat library for specific software packages, dependencies, and architecture-specific binaries.' },
+  { title: 'Red Hat Container Catalog', detail: 'Secure your supply chain with certified container images and real-time security health ratings.' },
+];
+const OTHER = [
+  { title: 'Errata for Red Hat Products', detail: 'Access security patches, bug fixes, and feature enhancements. Filter by severity to prioritize maintenance.' },
+  { title: 'Red Hat JBoss Catalog',       detail: 'Access certified, enterprise-grade Java middleware for building and integrating applications.' },
+];
+
+/* ── Helpers ──────────────────────────────────────────────────────────── */
+const isDownloadTrigger = (v) =>
+  /\b(linux|download|downloads|iso|rhel|ansible|openshift)\b/i.test(v.trim());
+
+/* ── Primitive layout wrappers ────────────────────────────────────────── */
+const Stack = ({ gap = 16, style = {}, children }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap, ...style }}>{children}</div>
+);
+const Grid = ({ columns = 3, gap = 12, children }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap }}>{children}</div>
+);
+const Row = ({ align = 'center', justify = 'flex-start', style = {}, children }) => (
+  <div style={{ display: 'flex', alignItems: align, justifyContent: justify, ...style }}>{children}</div>
+);
+const Divider = () => <hr style={{ border: 'none', borderTop: `1px solid ${pf.border}`, margin: 0 }} />;
+
+function Label({ children, size = 14, weight = 400, color = pf.text, style = {} }) {
+  return <span style={{ display: 'inline', color, fontSize: size, fontWeight: weight, lineHeight: 1.4, ...style }}>{children}</span>;
+}
+
+/* ── Icon button ──────────────────────────────────────────────────────── */
+function IconBtn({ label }) {
+  const g = label === 'Download' ? '↓' : label === 'Docs' ? '📄' : label === 'Info' ? 'ℹ' : '☎';
+  return (
+    <button type="button" title={label} aria-label={label} style={{ width: 28, height: 28, border: `1px solid ${pf.border}`, background: pf.bg, color: pf.iconMuted, borderRadius: 2, cursor: 'pointer', fontSize: 11, padding: 0 }}>
+      {g}
+    </button>
+  );
+}
+
+/* ── Product row (table view) ─────────────────────────────────────────── */
+function ProductRow({ product, highlight = false }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 12, alignItems: 'center', padding: '8px 8px', borderBottom: `1px solid ${pf.border}`, background: highlight ? '#eef3ff' : 'transparent', borderRadius: highlight ? 2 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+        <button type="button" style={{ border: 0, background: 'transparent', color: pf.link, font: 'inherit', fontSize: 13, textAlign: 'left', cursor: 'pointer', padding: 0 }}>
+          {product.name}
+        </button>
+        {product.tryIt && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', height: 22, padding: '0 7px', border: `1px solid ${pf.border}`, borderRadius: 2, color: pf.primary, fontSize: 11, whiteSpace: 'nowrap' }}>⏱ Try it</span>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 4 }}>
+        {product.download && <IconBtn label="Download" />}
+        {product.docs    && <IconBtn label="Docs" />}
+        {product.info    && <IconBtn label="Info" />}
+        {product.phone   && <IconBtn label="Phone" />}
+      </div>
+    </div>
+  );
+}
+
+/* ── Info card (software / other) ─────────────────────────────────────── */
+function InfoCard({ title, detail }) {
+  return (
+    <div style={{ background: pf.bgSubtle, borderRadius: 2, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <Label weight={500} size={14}>{title}</Label>
+      <Label size={12} color={pf.textSubtle}>{detail}</Label>
+      <button type="button" style={{ marginTop: 'auto', alignSelf: 'flex-start', border: 0, background: 'transparent', color: pf.link, font: 'inherit', fontSize: 13, padding: 0, cursor: 'pointer' }}>View →</button>
+    </div>
+  );
+}
+
+/* ── Downloads browse panel ───────────────────────────────────────────── */
+function DownloadsBrowse({ externalQuery = '' }) {
+  const [jumpId, setJumpId]       = useState('');
+  const [expanded, setExpanded]   = useState(() => Object.fromEntries(CATEGORIES.map(c => [c.id, true])));
+  const [productQuery, setProductQuery] = useState('');
+  const [suggestions, setSuggestions]   = useState([]);
+
+  const allExpanded = CATEGORIES.every(c => expanded[c.id]);
+
+  const toggleAll = () => {
+    setJumpId('');
+    const next = !allExpanded;
+    setExpanded(Object.fromEntries(CATEGORIES.map(c => [c.id, next])));
+  };
+
+  const toggleCat = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const jumpTo = (id) => {
+    setJumpId(id);
+    if (id) setExpanded(Object.fromEntries(CATEGORIES.map(c => [c.id, c.id === id])));
+    else     setExpanded(Object.fromEntries(CATEGORIES.map(c => [c.id, true])));
+  };
+
+  const orderedCats = (() => {
+    if (!jumpId) return CATEGORIES;
+    const focused = CATEGORIES.find(c => c.id === jumpId);
+    return focused ? [focused, ...CATEGORIES.filter(c => c.id !== jumpId)] : CATEGORIES;
+  })();
+
+  const filterProducts = (products) => {
+    const q = productQuery.trim().toLowerCase();
+    return q ? products.filter(p => p.name.toLowerCase().includes(q)) : products;
+  };
+
+  const isExternalMatch = (name) => {
+    const q = externalQuery.trim().toLowerCase();
+    return q.length >= 3 && name.toLowerCase().includes(q);
+  };
+
+  const onSearchChange = (val) => {
+    setProductQuery(val);
+    if (!val.trim()) { setSuggestions([]); return; }
+    const q = val.trim().toLowerCase();
+    const hits = CATEGORIES.flatMap(cat =>
+      cat.products
+        .filter(p => p.name.toLowerCase().includes(q))
+        .map(p => ({ name: p.name, category: cat.name }))
+    ).slice(0, 8);
+    setSuggestions(hits);
+  };
+
+  const pickSuggestion = (name) => {
+    setProductQuery(name);
+    setSuggestions([]);
+  };
+
+  return (
+    <Stack gap={20}>
+      {/* Popular downloads */}
+      <Stack gap={8}>
+        <Label size={12} weight={500} color={pf.textSubtle}>Popular downloads</Label>
+        <Grid columns={3} gap={10}>
+          {FEATURED.map(item => (
+            <div key={item.title} style={{ border: `1px solid ${pf.border}`, borderRadius: 2, padding: 14, background: pf.bg }}>
+              <Label color={pf.link} weight={500}>{item.title}</Label>
+              <div style={{ height: 4 }} />
+              <Label size={12} color={pf.textSubtle}>{item.detail}</Label>
+            </div>
+          ))}
+        </Grid>
+      </Stack>
+
+      {/* All products heading + view toggle */}
+      <div>
+        <Row justify="space-between" style={{ marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+          <Label size={18} weight={500}>All Red Hat products</Label>
+        </Row>
+
+        {/* Search with type-ahead */}
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <div style={{ display: 'flex', border: `1px solid ${pf.borderDark}`, borderRadius: 2, overflow: 'hidden' }}>
+            <input
+              type="text"
+              value={productQuery}
+              onChange={e => onSearchChange(e.target.value)}
+              placeholder="Search by product name, version or keyword..."
+              aria-label="Search products"
+              style={{ flex: 1, height: 36, padding: '0 12px', border: 'none', outline: 'none', fontSize: 14, background: pf.bg, color: pf.text }}
+            />
+            <div style={{ width: 1, background: pf.borderDark }} />
+            <button type="button" style={{ height: 36, padding: '0 14px', border: 0, background: pf.bg, color: pf.primary, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Search</button>
+            <div style={{ width: 1, background: pf.borderDark }} />
+            <button type="button" style={{ height: 36, padding: '0 14px', border: 0, background: pf.primary, color: pf.onPrimary, cursor: 'pointer', fontSize: 14 }}>▽ Filter</button>
+          </div>
+
+          {/* Suggestions dropdown */}
+          {suggestions.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: pf.bg, border: `1px solid ${pf.borderDark}`, borderTop: 'none', borderRadius: '0 0 2px 2px', zIndex: 30, maxHeight: 240, overflowY: 'auto' }}>
+              {suggestions.map(m => (
+                <button key={m.name} type="button" onClick={() => pickSuggestion(m.name)}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', border: 0, borderBottom: `1px solid ${pf.border}`, background: 'transparent', cursor: 'pointer', font: 'inherit' }}>
+                  <span style={{ fontSize: 13, color: pf.text, display: 'block' }}>{m.name}</span>
+                  <span style={{ fontSize: 11, color: pf.textSubtle }}>{m.category}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Jump to category + expand/collapse */}
+        <Row style={{ marginBottom: 12, flexWrap: 'wrap', gap: 12 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: pf.text }}>
+            <span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>Jump to category</span>
+            <select value={jumpId} onChange={e => jumpTo(e.target.value)} aria-label="Jump to category"
+              style={{ minWidth: 220, height: 34, padding: '0 8px', border: `1px solid ${pf.borderDark}`, borderRadius: 2, background: pf.bg, color: pf.text, font: 'inherit', fontSize: 13 }}>
+              <option value="">Select a category…</option>
+              {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={toggleAll}
+            style={{ border: 0, background: 'transparent', color: pf.link, font: 'inherit', fontSize: 13, padding: 0, cursor: 'pointer' }}>
+            {allExpanded ? 'Collapse all' : 'Expand all'}
+          </button>
+          {jumpId && <span style={{ fontSize: 12, color: pf.textSubtle }}>Other sections collapsed — use Expand all to restore.</span>}
+        </Row>
+
+        {/* Category accordion */}
+        {orderedCats.map(cat => {
+          const open = expanded[cat.id];
+          const focused = jumpId === cat.id;
+          const products = filterProducts(cat.products);
+          if (productQuery.trim() && products.length === 0) return null;
+          return (
+            <div key={cat.id} style={{ marginBottom: 6 }}>
+              <button type="button" onClick={() => toggleCat(cat.id)}
+                style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', border: 0, borderBottom: `1px solid ${pf.border}`, borderLeft: focused ? `3px solid ${pf.brand}` : '3px solid transparent', background: focused ? pf.bgSubtle : 'transparent', color: pf.text, font: 'inherit', fontSize: 15, fontWeight: 500, padding: '10px 8px', cursor: 'pointer', textAlign: 'left' }}>
+                <span>{cat.name}</span>
+                <span style={{ color: pf.textSubtle, fontSize: 12 }}>{open ? '▾' : '▸'}</span>
+              </button>
+              {open && (
+                <div style={{ padding: '10px 0 14px 8px', borderLeft: focused ? `3px solid ${pf.brand}` : '3px solid transparent' }}>
+                  {/* Table header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 12, paddingBottom: 4, borderBottom: `1px solid ${pf.border}` }}>
+                    <Label size={11} weight={500} color={pf.textSubtle}>Product Name</Label>
+                    <Label size={11} weight={500} color={pf.textSubtle}>Actions</Label>
+                  </div>
+                  {products.map(p => (
+                    <ProductRow key={p.name} product={p} highlight={isExternalMatch(p.name)} />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Software & Other */}
+      <Grid columns={2} gap={24}>
+        <Stack gap={10}>
+          <Label size={15} weight={500}>Software components</Label>
+          <Stack gap={10}>{SOFTWARE.map(i => <InfoCard key={i.title} title={i.title} detail={i.detail} />)}</Stack>
+        </Stack>
+        <Stack gap={10}>
+          <Label size={15} weight={500}>Other downloads</Label>
+          <Stack gap={10}>{OTHER.map(i => <InfoCard key={i.title} title={i.title} detail={i.detail} />)}</Stack>
+        </Stack>
+      </Grid>
+    </Stack>
+  );
+}
+
+/* ── Masthead ─────────────────────────────────────────────────────────── */
+function Masthead({ onSearchClick, open }) {
+  return (
+    <div style={{ height: 48, background: '#151515', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 16 }}>
+      <svg viewBox="0 0 24 24" width={22} height={22} aria-hidden="true">
+        <path fill="#ee0000" d="M20.1 11.3c1.9 0 4.7-.4 4.7-2.7 0-.4 0-.7-.1-1l-1.1-5c-.3-1.1-.5-1.6-2.4-2.6C19.6.3 16.5-.5 15.5-.5c-.9 0-1.2 1.2-2.3 1.2-1 0-1.8-.9-2.7-.9-.9 0-1.5.6-2 1.9L6.9 5.8c-.1.2-.1.4-.1.6 0 1.4 5.6 6.1 13.1 6.1M24.6 12.9c.3 1.2.3 1.4.3 1.6 0 2.2-2.4 3.3-5.6 3.3C11 17.8 5.1 13.4 5.1 10.5c0-.7.2-1.3.4-1.7L4 11.2C3.2 12.1.8 13.2.8 16c0 4.8 11.5 10.8 20.6 10.8 7 0 8.7-3.1 8.7-5.6 0-2-.4-3.9-5.5-5.6z"/>
+      </svg>
+      <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>Hybrid Cloud Console</span>
+      <div style={{ flex: 1 }} />
+      <button type="button" onClick={onSearchClick} aria-label="Search or ask AI" title="Search or ask AI  ⌘K"
+        style={{ display: 'flex', alignItems: 'center', gap: 8, background: open ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, color: 'rgba(255,255,255,0.85)', padding: '0 12px', height: 30, cursor: 'pointer', fontSize: 13 }}>
+        <svg viewBox="0 0 16 16" width={13} height={13} fill="currentColor" aria-hidden="true">
+          <path d="M15.7 14.3l-4.1-4.1A6.5 6.5 0 1 0 .5 6.5 6.5 6.5 0 0 0 9.7 12l4.1 4.1 1.9-1.8zM6.5 11A4.5 4.5 0 1 1 11 6.5 4.5 4.5 0 0 1 6.5 11z"/>
+        </svg>
+        <span>Search or ask AI…</span>
+        <span style={{ fontSize: 10, opacity: 0.55, marginLeft: 2 }}>⌘K</span>
+      </button>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#6a6e73', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 600 }}>KR</div>
+    </div>
+  );
+}
+
+/* ── Root component ───────────────────────────────────────────────────── */
+function App() {
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [selected, setSelected]       = useState(null);
+  const [query, setQuery]             = useState('');
+
+  const onOpen  = () => { setPaletteOpen(true);  setSelected(null); setQuery(''); };
+  const onClose = () => { setPaletteOpen(false); setSelected(null); setQuery(''); };
+
+  const onQuery = (val) => {
+    setQuery(val);
+    setSelected(isDownloadTrigger(val) ? 'Downloads' : null);
+  };
+
+  return (
+    <div style={{ maxWidth: 960, margin: '32px auto', padding: '0 16px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 12 }}>
+        <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: pf.text }}>v0.4 — Downloads in AI Search dropdown</p>
+        <p style={{ margin: 0, fontSize: 12, color: pf.textSubtle }}>
+          Click <strong>Search or ask AI…</strong> in the masthead. Type <em>linux</em> or <em>download</em> to trigger Downloads.
+          <br/>
+          <em style={{ color: pf.border, fontSize: 11 }}>
+            Build note: in production the search bar expands inline in the masthead, not as a separate dropdown below it.
+          </em>
+        </p>
+      </div>
+
+      {/* Shell chrome */}
+      <div style={{ border: `1px solid ${pf.border}`, borderRadius: 4, overflow: 'hidden', background: pf.bg }}>
+        <Masthead onSearchClick={paletteOpen ? onClose : onOpen} open={paletteOpen} />
+
+        {/* Palette — inline below masthead */}
+        {paletteOpen && (
+          <div style={{ borderTop: `1px solid ${pf.border}` }}>
+            {/* Search row */}
+            <div style={{ padding: 10, borderBottom: `1px solid ${pf.border}`, background: pf.bgSubtle, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="text"
+                value={query}
+                onChange={e => onQuery(e.target.value)}
+                placeholder="Search or ask AI…"
+                autoFocus
+                style={{ flex: 1, height: 34, padding: '0 12px', border: `1px solid ${pf.borderDark}`, borderRadius: 2, outline: 'none', fontSize: 14, background: pf.bg, color: pf.text }}
+              />
+              <button type="button" onClick={onClose}
+                style={{ border: 0, background: 'transparent', color: pf.textSubtle, cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: '0 4px' }}
+                aria-label="Close search">✕</button>
+            </div>
+
+            {/* Two-column palette */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(190px,220px) minmax(0,1fr)', minHeight: 520 }}>
+              {/* Left nav */}
+              <nav aria-label="Services" style={{ borderRight: `1px solid ${pf.border}`, padding: '10px 0', background: pf.bg }}>
+                <div style={{ padding: '4px 16px 6px' }}>
+                  <Label size={11} weight={500} color={pf.textSubtle}>Platforms</Label>
+                </div>
+                <Stack gap={0} style={{ padding: '0 8px 10px' }}>
+                  {['Red Hat Ansible Automation Platform','Red Hat Enterprise Linux','Red Hat OpenShift'].map(n => (
+                    <span key={n} style={{ fontSize: 13, color: pf.link, padding: '4px 8px', display: 'block', cursor: 'pointer' }}>{n}</span>
+                  ))}
+                </Stack>
+                <Divider />
+                <Row justify="space-between" style={{ padding: '10px 16px 6px' }}>
+                  <Label size={11} weight={500} color={pf.textSubtle}>Services</Label>
+                  <Label size={11} color={pf.link} style={{ cursor: 'pointer' }}>View all</Label>
+                </Row>
+                <Stack gap={0}>
+                  {SERVICES.map(name => {
+                    const active   = selected === name;
+                    const hinted   = name === 'Downloads' && isDownloadTrigger(query);
+                    return (
+                      <button key={name} type="button" onClick={() => setSelected(name)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, width: '100%', textAlign: 'left', border: hinted && !active ? `2px solid ${pf.primary}` : '2px solid transparent', background: active ? pf.bgHover : 'transparent', color: pf.text, font: 'inherit', fontSize: 13, fontWeight: active || hinted ? 600 : 400, padding: '9px 14px', cursor: 'pointer' }}>
+                        {name}
+                      </button>
+                    );
+                  })}
+                </Stack>
+              </nav>
+
+              {/* Right panel */}
+              <div style={{ padding: 18, background: pf.bg, overflowY: 'auto' }}>
+                {selected === 'Downloads' ? (
+                  <DownloadsBrowse externalQuery={query} />
+                ) : (
+                  <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 40, textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: pf.textSubtle }}>HCC content…</p>
+                    <p style={{ margin: 0, fontSize: 13, color: pf.border }}>"type download or Linux"</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
