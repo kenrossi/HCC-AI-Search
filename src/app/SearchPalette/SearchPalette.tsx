@@ -487,7 +487,7 @@ const SearchPalette: React.FunctionComponent<SearchPaletteProps> = ({
         return;
       }
       // Don't close when clicking a portaled PF dropdown menu (e.g. Select with appendTo body)
-      if ((target as Element).closest?.('.pf-v6-c-menu')) {
+      if ((target as Element).closest?.('.pf-v6-c-menu, .pf-v6-c-select, .pf-v6-c-select__menu')) {
         return;
       }
       closeAndReset();
