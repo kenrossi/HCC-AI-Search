@@ -246,7 +246,7 @@
 
 .ai-search-palette__service-detail {
   padding-block: var(--pf-t--global--spacer--lg);
-  padding-inline: var(--pf-t--global--spacer--lg);
+  padding-inline: var(--pf-t--global--spacer--md);
 }
 
 .ai-search-palette__service-detail .pf-v6-c-menu,
@@ -486,10 +486,21 @@
   top: calc(-1 * var(--pf-t--global--spacer--lg));
   z-index: 10;
   background-color: var(--pf-t--global--background--color--primary--default);
-  margin-inline: calc(-1 * var(--pf-t--global--spacer--lg));
-  padding-inline: var(--pf-t--global--spacer--lg);
-  padding-block: var(--pf-t--global--spacer--md);
+  margin-inline: calc(-1 * var(--pf-t--global--spacer--md));
+  margin-block-start: calc(-1 * var(--pf-t--global--spacer--md));
+  padding-inline: 0;
+  padding-block-start: 0;
+  padding-block-end: var(--pf-t--global--spacer--md);
   border-bottom: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
+}
+
+.ai-search-downloads__controls-sticky > .pf-v6-c-stack > .pf-v6-c-stack__item {
+  padding-inline: var(--pf-t--global--spacer--md);
+}
+
+.ai-search-downloads__controls-sticky .pf-v6-c-title {
+  --pf-v6-c-title--MarginBlockStart: 0;
+  --pf-v6-c-title--MarginBlockEnd: 0;
 }
 
 .ai-search-downloads__jump-label {

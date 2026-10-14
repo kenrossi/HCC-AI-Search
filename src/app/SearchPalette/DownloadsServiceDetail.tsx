@@ -53,7 +53,6 @@ interface DownloadsCategory {
   products: Product[];
 }
 
-type ViewMode = 'tile' | 'table';
 
 // ── Static data ────────────────────────────────────────────────────────────────
 
@@ -257,7 +256,6 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
   externalQuery = '',
   onNavigate: _onNavigate,
 }) => {
-  const [view, setView] = React.useState<ViewMode>('table');
   const [jumpOpen, setJumpOpen] = React.useState(false);
   const [jumpId, setJumpId] = React.useState('');
   const [productQuery, setProductQuery] = React.useState('');
@@ -321,69 +319,16 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
 
   return (
     <Stack hasGutter>
-      {/* ── Popular downloads ─────────────────────────────────── */}
-      <StackItem>
-        <Stack hasGutter>
-          <StackItem>
-            <span className="ai-search-downloads__section-label">Popular downloads</span>
-          </StackItem>
-          <StackItem>
-            <Grid hasGutter>
-              {FEATURED.map((item) => (
-                <GridItem key={item.title} span={4}>
-                  <Card isCompact>
-                    <CardTitle>
-                      <Button variant="link" isInline>
-                        {item.title}
-                      </Button>
-                    </CardTitle>
-                    <CardBody>{item.detail}</CardBody>
-                  </Card>
-                </GridItem>
-              ))}
-            </Grid>
-          </StackItem>
-        </Stack>
-      </StackItem>
-
       {/* ── All Red Hat products ──────────────────────────────── */}
       <StackItem>
         <Stack hasGutter>
           <div className="ai-search-downloads__controls-sticky">
             <Stack hasGutter>
-          {/* Header + view toggle */}
+          {/* Header */}
           <StackItem>
-            <Flex
-              alignItems={{ default: 'alignItemsCenter' }}
-              justifyContent={{ default: 'justifyContentSpaceBetween' }}
-              flexWrap={{ default: 'nowrap' }}
-            >
-              <FlexItem>
-                <Title headingLevel="h3" size="lg">
-                  All Red Hat products
-                </Title>
-              </FlexItem>
-              <FlexItem>
-                <ToggleGroup aria-label="Product view" isCompact>
-                  <ToggleGroupItem
-                    text="Tile"
-                    buttonId="dl-view-tile"
-                    isSelected={view === 'tile'}
-                    onChange={(_e, selected) => {
-                      if (selected) setView('tile');
-                    }}
-                  />
-                  <ToggleGroupItem
-                    text="Table"
-                    buttonId="dl-view-table"
-                    isSelected={view === 'table'}
-                    onChange={(_e, selected) => {
-                      if (selected) setView('table');
-                    }}
-                  />
-                </ToggleGroup>
-              </FlexItem>
-            </Flex>
+            <Title headingLevel="h3" size="lg">
+              All Red Hat products
+            </Title>
           </StackItem>
 
           {/* Product search + type-ahead */}
@@ -503,23 +448,15 @@ export const DownloadsServiceDetail: React.FunctionComponent<DownloadsServiceDet
                     onToggle={() => toggleCat(cat.id)}
                     displaySize="lg"
                   >
-                    {view === 'table' ? (
-                      <div>
-                        <div className="ai-search-downloads__table-header">
-                          <span>Product name</span>
-                          <span>Actions</span>
-                        </div>
-                        {products.map((p) => (
-                          <ProductTableRow key={p.name} product={p} highlighted={isHighlighted(p.name)} />
-                        ))}
+                    <div>
+                      <div className="ai-search-downloads__table-header">
+                        <span>Product name</span>
+                        <span>Actions</span>
                       </div>
-                    ) : (
-                      <Gallery hasGutter minWidths={{ default: '14rem' }}>
-                        {products.map((p) => (
-                          <ProductTileCard key={p.name} product={p} />
-                        ))}
-                      </Gallery>
-                    )}
+                      {products.map((p) => (
+                        <ProductTableRow key={p.name} product={p} highlighted={isHighlighted(p.name)} />
+                      ))}
+                    </div>
                   </ExpandableSection>
                 </div>
               );

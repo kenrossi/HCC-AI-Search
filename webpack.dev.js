@@ -13,13 +13,21 @@ export default merge(common('development'), {
   devServer: {
     host: HOST,
     port: PORT,
-    historyApiFallback: true,
-    open: true,
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/HCC-AI-Search\/.*/, to: '/HCC-AI-Search/index.html' }
+      ],
+    },
+    devMiddleware: {
+      publicPath: '/HCC-AI-Search/',
+    },
+    open: '/HCC-AI-Search/',
     static: {
       directory: path.resolve('./dist'),
     },
     client: {
       overlay: true,
+      webSocketURL: 'auto://0.0.0.0:0/ws',
     },
   },
   module: {
