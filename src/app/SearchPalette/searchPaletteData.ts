@@ -778,7 +778,21 @@ export interface ServiceNavItem {
   id: string;
   name: string;
   group: ServiceNavGroupId;
-  icon: 'wrench' | 'server' | 'cube' | 'star' | 'brain' | 'bell' | 'rocket' | 'users' | 'list' | 'eye' | 'play' | 'shield' | 'credit-card';
+  icon:
+    | 'wrench'
+    | 'server'
+    | 'cube'
+    | 'star'
+    | 'brain'
+    | 'bell'
+    | 'rocket'
+    | 'download'
+    | 'users'
+    | 'list'
+    | 'eye'
+    | 'play'
+    | 'shield'
+    | 'credit-card';
   isLink?: boolean;
   url?: string;
   description?: string;
@@ -870,6 +884,15 @@ export const serviceNavItems: ServiceNavItem[] = [
     details:
       'Streamline application deployment with CI/CD pipelines, automated testing, and progressive delivery strategies across multiple environments.',
     features: ['CI/CD Pipelines', 'Automated Testing', 'Progressive Delivery', 'Environment Management'],
+  },
+  {
+    id: 'downloads',
+    name: 'Downloads',
+    group: 'Services',
+    icon: 'download',
+    description: 'Product downloads',
+    details: 'Find Red Hat product downloads, installation media, images, and supporting tools.',
+    features: ['Product Downloads'],
   },
   {
     id: 'identity-access-mgmt',
