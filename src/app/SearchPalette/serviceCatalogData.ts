@@ -1,4 +1,7 @@
+import { downloadsSimpleList } from './downloadsSimpleList';
+
 export type CatalogCategory =
+  | 'Product downloads'
   | 'Red Hat Enterprise Linux'
   | 'Red Hat OpenShift'
   | 'Red Hat Ansible Automation Platform'
@@ -8,6 +11,7 @@ export type CatalogCategory =
   | 'Other';
 
 export const catalogCategoryOrder: CatalogCategory[] = [
+  'Product downloads',
   'Red Hat Enterprise Linux',
   'Red Hat OpenShift',
   'Red Hat Ansible Automation Platform',
@@ -26,6 +30,13 @@ export interface CatalogEntry {
 }
 
 export const catalogEntries: CatalogEntry[] = [
+  ...downloadsSimpleList.products.map((product) => ({
+    id: `downloads-${product.id}`,
+    name: product.name,
+    description: product.description,
+    category: 'Product downloads' as const,
+    route: `/downloads/products/${product.id}?entry=services`,
+  })),
   {
     id: 'rhel-insights',
     name: 'Red Hat Insights',
@@ -275,6 +286,7 @@ const DEFAULT_CATALOG_IDS = [
 ];
 
 const catalogIdsByNavItem: Record<string, string[]> = {
+  downloads: downloadsSimpleList.products.map((product) => `downloads-${product.id}`),
   ansible: ['automation-hub', 'automation-controller', 'ansible-registration-assistant'],
   rhel: [
     'rhel-insights',

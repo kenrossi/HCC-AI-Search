@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { downloadsSimpleList } from './downloadsSimpleList';
 import {
   Button,
   Divider,
@@ -21,6 +22,7 @@ import {
   BrainIcon,
   CreditCardIcon,
   CubeIcon,
+  DownloadIcon,
   EyeIcon,
   ListIcon,
   PlayIcon,
@@ -65,6 +67,8 @@ const serviceIcon = (icon: ServiceNavItem['icon']): React.ReactNode => {
       return <BellIcon />;
     case 'rocket':
       return <RocketIcon />;
+    case 'download':
+      return <DownloadIcon />;
     case 'users':
       return <UsersIcon />;
     case 'list':
@@ -97,6 +101,7 @@ const CatalogMenu: React.FunctionComponent<{
       <MenuItem
         key={entry.id}
         itemId={entry.id}
+        data-ouia-component-id={`search-catalog-${entry.id}`}
         description={entry.description}
         onClick={() => {
           if (entry.route) {
@@ -176,7 +181,12 @@ const SearchServiceDetail: React.FunctionComponent<SearchServiceDetailProps> = (
   }
 
   return (
-    <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsLg' }}>
+    <Flex
+      direction={{ default: 'column' }}
+      spaceItems={{ default: 'spaceItemsLg' }}
+      data-ouia-component-id={item.id === 'downloads' ? 'downloads-service-detail' : undefined}
+      data-downloads-menu-version={item.id === 'downloads' ? downloadsSimpleList.id : undefined}
+    >
       <FlexItem>
         <Title headingLevel="h3" size="xl">
           {item.name}
@@ -190,6 +200,18 @@ const SearchServiceDetail: React.FunctionComponent<SearchServiceDetailProps> = (
           onNavigate={onNavigate}
         />
       </FlexItem>
+      {item.id === 'downloads' && (
+        <FlexItem>
+          <Button
+            variant="link"
+            isInline
+            data-ouia-component-id="browse-all-downloads"
+            onClick={() => onNavigate({ route: downloadsSimpleList.browseRoute })}
+          >
+            {downloadsSimpleList.browseLabel}
+          </Button>
+        </FlexItem>
+      )}
     </Flex>
   );
 };
@@ -256,6 +278,8 @@ const SearchServicesPanel: React.FunctionComponent<SearchServicesPanelProps> = (
                 key={item.id}
                 itemId={item.id}
                 icon={<Icon>{serviceIcon(item.icon)}</Icon>}
+                data-ouia-component-id={`search-service-${item.id}`}
+                isSelected={selectedItemId === item.id}
                 className={selectedItemId === item.id ? 'is-selected' : undefined}
                 onClick={() => onSelectService(item.id)}
               >
